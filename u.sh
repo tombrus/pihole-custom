@@ -39,7 +39,7 @@ block() {
 	piholeRestartMonitored -b     -q    -nr "$@"
 }
 unblock() {
-        piholeRestartMonitored -b     -q -d -nr "$@"
+    piholeRestartMonitored -b     -q -d -nr "$@"
 }
 blockWild() {
 	piholeRestartMonitored --wild -q    -nr "$@"
@@ -75,20 +75,28 @@ kidsAllowManual() {
 	restartDnsIfNeeded
 }
 #################################################################
+LOCAL_DOMAIN="$(domainname)"
+LOCAL_GATEWAY="$(ip route |fgrep default | sed 's/default via //;s/ .*//p')"
 updateEtcHosts() {
-	(	cat /etc/hosts-backup
-		echo "####### generated:"
-		for i in $(seq 1 254); do
-			local name="$(dig @10.0.0.254 +short -x 10.0.0.$i|sed 's/\.$//;s/\.brus$//')"
-			if [[ $name ]]; then
-				printf "10.0.0.%-4s %s\n" "$i" "$name"
-			fi
-		done
-	) > /tmp/hosts-$$
-	if ! cmp -s /etc/hosts /tmp/hosts-$$; then
-		echo "updated /etc/hosts: $(wc -l </etc/hosts) lines now"
-		sudo cp /tmp/hosts-$$ /etc/hosts
-		PIHOLE_RESTART_NEEDED=true
-	fi
-	rm /tmp/hosts-$$
+    if [[ "$LOCAL_GATEWAY" != "" && "$LOCALDOMAIN" != "" ]]; then
+        if [[ ! -f /etc/hosts-backup ]]; then
+            sudo cp /etc/hosts /etc/hosts-backup
+        fi
+        (	cat /etc/hosts-backup
+            echo "####### generated:"
+            for i in $(seq 1 254); do
+                local ip="$(printf "%s.%d" "$(sed 's/[.][0-9][0-9]*$//' <<<$LOCAL_GATEWAY)" "$i")"
+                local name="$(dig @$LOCAL_GATEWAY +short -x "$ip" |sed 's/\.$//;s/\.'"$LOCAL_DOMAIN"'$//')"
+                if [[ $name ]]; then
+                    printf "%-15s %s\n" "$ip" "$name"
+                fi
+            done
+        ) > /tmp/hosts-$$
+        if ! cmp -s /etc/hosts /tmp/hosts-$$; then
+            echo "updated /etc/hosts: $(wc -l </etc/hosts) lines now"
+            sudo cp /tmp/hosts-$$ /etc/hosts
+            PIHOLE_RESTART_NEEDED=true
+        fi
+        rm /tmp/hosts-$$
+    fi
 }
