@@ -78,7 +78,7 @@ kidsAllowManual() {
 LOCAL_DOMAIN="$(domainname)"
 LOCAL_GATEWAY="$(ip route |fgrep default | sed 's/default via //;s/ .*//p')"
 updateEtcHosts() {
-    if [[ "$LOCAL_GATEWAY" != "" && "$LOCALDOMAIN" != "" ]]; then
+    if [[ "$LOCAL_GATEWAY" != "" && "$LOCAL_DOMAIN" != "" ]]; then
         if [[ ! -f /etc/hosts-backup ]]; then
             sudo cp /etc/hosts /etc/hosts-backup
         fi
