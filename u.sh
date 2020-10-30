@@ -76,7 +76,7 @@ kidsAllowManual() {
 }
 #################################################################
 LOCAL_DOMAIN="$(domainname)"
-LOCAL_GATEWAY="$(ip route |fgrep default | sed 's/default via //;s/ .*//p')"
+LOCAL_GATEWAY="$(ip route |fgrep default | sed 's/default via //;s/ .*//')"
 updateEtcHosts() {
     if [[ "$LOCAL_GATEWAY" != "" && "$LOCAL_DOMAIN" != "" ]]; then
         if [[ ! -f /etc/hosts-backup ]]; then
@@ -93,7 +93,7 @@ updateEtcHosts() {
             done
         ) > /tmp/hosts-$$
         if ! cmp -s /etc/hosts /tmp/hosts-$$; then
-            echo "updated /etc/hosts: $(wc -l </etc/hosts) lines now"
+            echo "$(date): updated /etc/hosts: $(wc -l </etc/hosts) => $(wc -l </tmp/hosts-$$) lines"
             sudo cp /tmp/hosts-$$ /etc/hosts
             PIHOLE_RESTART_NEEDED=true
         fi
