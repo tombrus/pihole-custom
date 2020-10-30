@@ -1,1 +1,1 @@
-0,15,30,45 * * * * ~/cronHour.sh >> ~/cronHour.log 2>&1
+0,15,30,45 * * * * ~/pihole-custom/cronHour.sh >> ~/cronHour.log 2>&1
