@@ -1,6 +1,6 @@
 #!/bin/bash -ue
 
-. u.sh
+. ~/pihole-custom/u.sh
 
 h="$([[ "${1:-}" != "" ]] && echo "$1" || date +%H)"
 h="$(sed 's/^0//' <<<$h)"
